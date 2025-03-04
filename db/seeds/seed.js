@@ -1,24 +1,24 @@
 const db = require("../connection");
 const format = require("pg-format");
-const  { topics, users, articles, comments } = require("../data/test-data/index")
 
 
-const seed = ({ topics, users, articles, comments }) => {
-  return db.query("DROP TABLE IF EXISTS comments CASCADE;")
+
+const seed = ({ topicData, userData, articleData, commentData }) => {
+  return db.query("DROP TABLE IF EXISTS comments;")
   .then(() => {
-    return db.query("DROP TABLE IF EXISTS articles CASCADE;")
+    return db.query("DROP TABLE IF EXISTS articles;")
   })
   .then(() => {
-    return db.query("DROP TABLE IF EXISTS users CASCADE;")
+    return db.query("DROP TABLE IF EXISTS users;")
 })
   .then(() => {
-    return db.query("DROP TABLE IF EXISTS topics CASCADE;")
+    return db.query("DROP TABLE IF EXISTS topics;")
 })
   .then(() => {
     return db.query(
     `CREATE TABLE topics(
           slug VARCHAR(50) PRIMARY KEY,
-          description VARCHAR NOT NULL,
+          description VARCHAR(60) NOT NULL,
           img_url VARCHAR(1000));`
         );
           
@@ -57,14 +57,14 @@ const seed = ({ topics, users, articles, comments }) => {
           
 
 }).then(() => {
-  const topicValues = topics.map(topic => 
+  const topicValues = topicData.map(topic => 
   { return [ 
     topic.slug, 
     topic.description, 
     topic.img_url || null
   ]
   } );
- const topicInsert = format(`INSERT INTO topics(slug, description, img_url) VALUES %L RETURNING *;`,
+ const topicInsert = format(`INSERT INTO topics(slug, description, img_url) VALUES %L;`,
   topicValues
 );
 console.log(topicInsert)
@@ -73,7 +73,7 @@ return db.query(topicInsert) ;
 }) 
   
 .then(() => {
-      const userValues = users.map(user => {
+      const userValues = userData.map(user => {
         return [
         user.username, 
         user.name, 
@@ -87,7 +87,7 @@ return db.query(topicInsert) ;
       return db.query(insertQuery)
   }) 
   .then(() => {
-    const articleValues = articles.map(article =>{
+    const articleValues = articleData.map(article =>{
       return [
       article.title, 
       article.topic, 
@@ -110,7 +110,7 @@ return db.query(topicInsert) ;
       result.rows.forEach(article => {
         articleLookup[article.title] = article.article_id;
       })
-      const commentValues = comments.map(comment => {
+      const commentValues = commentData.map(comment => {
         return [
         comment.body, 
         comment.votes,
