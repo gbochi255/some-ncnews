@@ -1,18 +1,18 @@
 const db = require("../connection");
 const format = require("pg-format");
-//const  { topics, users, articles, comments } = require("../data/test-data/index")
+const  { topics, users, articles, comments } = require("../data/test-data/index")
 
 
 const seed = ({ topics, users, articles, comments }) => {
   return db.query("DROP TABLE IF EXISTS comments CASCADE;")
   .then(() => {
-    db.query("DROP TABLE IF EXISTS articles CASCADE;")
+    return db.query("DROP TABLE IF EXISTS articles CASCADE;")
   })
   .then(() => {
-    db.query("DROP TABLE IF EXISTS users CASCADE;")
+    return db.query("DROP TABLE IF EXISTS users CASCADE;")
 })
   .then(() => {
-    db.query("DROP TABLE IF EXISTS topics CASCADE;")
+    return db.query("DROP TABLE IF EXISTS topics CASCADE;")
 })
   .then(() => {
     return db.query(
@@ -31,7 +31,7 @@ const seed = ({ topics, users, articles, comments }) => {
     );
       
 }).then(() => {
-  return db.query(createArticles
+  return db.query(
       `CREATE TABLE articles(
           article_id SERIAL PRIMARY KEY,
           title VARCHAR NOT NULL,
@@ -45,7 +45,7 @@ const seed = ({ topics, users, articles, comments }) => {
           
 })
   .then(() => {
-    return db.query(createComments
+    return db.query(
           `CREATE TABLE comments(
           comment_id SERIAL PRIMARY KEY,
           body TEXT NOT NULL,
@@ -57,38 +57,47 @@ const seed = ({ topics, users, articles, comments }) => {
           
 
 }).then(() => {
-  const topicValues = topics.map(topic => [ 
+  const topicValues = topics.map(topic => 
+  { return [ 
     topic.slug, 
     topic.description, 
     topic.img_url || null
-
-  ]);
+  ]
+  } );
  const topicInsert = format(`INSERT INTO topics(slug, description, img_url) VALUES %L RETURNING *;`,
   topicValues
 );
+console.log(topicInsert)
 return db.query(topicInsert) ;
     
 }) 
   
 .then(() => {
-      const userValues = users.map(user => [
+      const userValues = users.map(user => {
+        return [
         user.username, 
         user.name, 
-        user.avatar_url]);
+        user.avatar_url
+      ]
+});
+
       const insertQuery  = format(`INSERT INTO users(username, name) VALUES %L RETURNING *;`,
         userValues
       );
       return db.query(insertQuery)
   }) 
   .then(() => {
-    const articleValues = articles.map(article => [
+    const articleValues = articles.map(article =>{
+      return [
       article.title, 
       article.topic, 
       article.author, 
       article.body, 
       article.created_at, 
       article.votes || 0, 
-      article.article_img_url || null])
+      article.article_img_url || null
+    ]
+  })
       const articlesInsert = format(`INSERT INTO articles(title, topic, author, body, created_at, votes, article_img_url)
         VALUES %L RETURNING *;`, articleValues);
         return db.query(articlesInsert);
@@ -101,13 +110,15 @@ return db.query(topicInsert) ;
       result.rows.forEach(article => {
         articleLookup[article.title] = article.article_id;
       })
-      const commentValues = comments.map(comment => [
+      const commentValues = comments.map(comment => {
+        return [
         comment.body, 
         comment.votes,
         comments.author, 
         new Date(comment.created_at),
         articleLookup[comment.article_title]
-      ]);
+      ]
+    });
       const commentsInsert = format(`insert into comments(body, votes, author, created_at, article_id)
         VALUES &L RETURNING *;`, commentValues
       );
