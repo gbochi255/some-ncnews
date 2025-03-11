@@ -152,7 +152,7 @@ describe("GET /api/articles/:article_id/comments", () => {
     })
   })
 })
-describe.only("POST /api/articles/:article_id/comments", () => {
+describe("POST /api/articles/:article_id/comments", () => {
   test("200: responds with posted comments when given article_id and body", () => {
     const newComment = { 
       username: "icellusedkars",
@@ -194,5 +194,19 @@ describe.only("POST /api/articles/:article_id/comments", () => {
               })
 
             })    
-  
-})
+          })
+          describe.only("PATCH /api/articles/:article_id", () => {
+            test("200: updates when provided a valid article_id", () => {
+              return request(app)
+              .patch("/api/articles/1")
+              .send({ inc_votes: 1 })
+              .expect(200)
+              .then((response) => {
+                
+                const article = response.body.article;
+                
+                expect(article).toHaveProperty("votes")
+              })
+
+            })
+          })
