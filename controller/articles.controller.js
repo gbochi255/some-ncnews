@@ -1,6 +1,6 @@
 const articles = require("../db/data/test-data/articles");
 const topics = require("../db/data/test-data/topics")
-const { fetchAllArticles, fetchArticleById } = require("../models/articles.model")
+const { fetchAllArticles, fetchArticleById, patchArticleVotes } = require("../models/articles.model")
 
 
 
@@ -25,3 +25,15 @@ if(!(Number(article_id))){
     .catch(next);
 };
 
+exports.patchArticleById = (req, res, next) => {
+    const { article_id } = req.params;
+    const { inc_votes } = req.body;
+    if(inc_votes === undefined || typeof inc_votes !== "number") {
+        return res.status(400).json({ error: {msg: "Invalid or missing inc_votes" } });
+    }
+    patchArticleVotes(Number(article_id), inc_votes)
+    .then((article) => {
+        res.status(200).json({ article });
+    })
+    .catch(next);
+}
