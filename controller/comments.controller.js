@@ -14,10 +14,13 @@ fetchCommentsByArticleId(article_id)
 exports.postCommentByArticleId = (req, res, next) => {
     const { article_id } = req.params
     const { username, body } = req.body;
+    if(!username || !body){
+        return res.status(400).json({ error: { msg: "Missing required field" } })
+    }
 
     insertCommentByArticleId(article_id, username, body)
     .then((comment) => {
-        res.status(200).json({ comment });
+        res.status(201).json({ comment });
     })
     .catch(next)
 }

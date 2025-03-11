@@ -16,10 +16,14 @@ exports.fetchCommentsByArticleId = (article_id) => {
 }
 
 exports.insertCommentByArticleId = (article_id, username, body) => {
+    
     const queryStr = `
-    INSERT INTO comments(author, body, article_id) 
-    VALUES ($1, $2, $3) 
-    RETURNING comment_id, votes, created_at, author, body, article_id; `;
+    INSERT INTO comments
+    (author, body, article_id) 
+    VALUES 
+    ($1, $2, $3) 
+    RETURNING comment_id, votes, created_at, author, body, article_id ; `
+    ;
     return db
     .query(queryStr, [username, body, article_id])
     .then(({ rows }) => rows[0])

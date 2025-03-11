@@ -125,7 +125,7 @@ describe("GET /api/articles", () =>{
     })
   })
 });
-describe.only("GET /api/articles/:article_id/comments", () => {
+describe("GET /api/articles/:article_id/comments", () => {
   test("200: respond with an array of comments for an article_id", ()=> {
     return request(app)
     .get("/api/articles/2/comments")
@@ -152,17 +152,47 @@ describe.only("GET /api/articles/:article_id/comments", () => {
     })
   })
 })
-describe("POST /api/articles/:article_id/comments", () => {
+describe.only("POST /api/articles/:article_id/comments", () => {
   test("200: responds with posted comments when given article_id and body", () => {
     const newComment = { 
-      username: "ogbolum",
+      username: "icellusedkars",
       body: "Some naive comment"
     };
     return request(app)
     .post("/api/articles/2/comments")
-    .expect(200)
+    .send(newComment)
+    .expect(201)
     .then((response) => {
-      
-    })
-  })
+      const comment = response.body.comment;
+      expect(comment).toHaveProperty("comment_id");
+      expect(comment.author).toBe(newComment.username);
+      expect(comment.body).toBe(newComment.body);
+      expect(comment.article_id).toBe(2);
+      expect(comment).toHaveProperty("votes");
+      expect(comment).toHaveProperty("created_at");
+    });
+  });
+    test("400: return for invalid article_id", ()  => {
+      const newComment = {
+        username: "icellusedkars",
+      }
+      return request(app)
+              .post("/api/articles/not-a-number/comments")
+              .send(newComment)
+              .expect(400)
+              .then((response) => {
+                expect(response.body.error).toEqual({ msg: "Missing required field" });
+              })
+            })
+            test("400: return for missing required field", ()  => {
+              return request(app)
+              .post("/api/articles/2/comments")
+              .send({ username: "icellusedkars" })
+              .expect(400)
+              .then((response) => {
+                expect(response.body.error).toEqual({ msg: "Missing required field" });
+              })
+
+            })    
+  
 })
