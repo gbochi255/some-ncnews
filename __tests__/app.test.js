@@ -195,7 +195,7 @@ describe("POST /api/articles/:article_id/comments", () => {
 
             })    
           })
-          describe.only("PATCH /api/articles/:article_id", () => {
+          describe("PATCH /api/articles/:article_id", () => {
             test("200: updates when provided a valid article_id", () => {
               return request(app)
               .patch("/api/articles/1")
@@ -209,4 +209,56 @@ describe("POST /api/articles/:article_id/comments", () => {
               })
 
             })
+          })
+          describe("DELETE /api/comments/:comment_id", () => {
+            test("204: responds with 204 on deleting and no content", () => {
+              return request(app)
+              .delete("/api/comments/1")
+              .expect(204)
+              .then((response) => {
+                expect(response.body).toEqual({})
+              })
+            })
+            test("respond with 404 if the comment does not exist", () => {
+              return request(app)
+              .delete("/api/comments/9999")
+              .expect(404)
+              .then((response) => {
+                expect(response.body.error).toEqual({ msg: "Comment not found" })
+              });
+            });
+          });
+          describe.only("GET /api/users", () => {
+            test("200: responds with an array of user object with required properties", () => {
+              return request(app)
+              .get("/api/users")
+              .expect(200)
+              .then((response) => {
+                const users = response.body.users;
+                expect(Array.isArray(users)).toBe(true)
+                users.forEach((user) => {
+                  expect(user).toHaveProperty("username");
+                  expect(user).toHaveProperty("name");
+                  expect(user).toHaveProperty("avatar_url");
+                });
+              });
+            });
+          });
+          describe("GET /api/articles (sorting queries", () => {
+            test("200: returns sorting by created_at in descending order as default", () => {
+              return request(app)
+              .get("/api/articles")
+              .expect(200)
+              .then((response) => {
+                const articles = response.body.articles;
+                expect(Array.isArray(articles)).toBe(true);
+                //check that each article's created_at is >= the next article'sn created_at
+                for (let i=0; i<articles.length -1; i++){
+                  const current = new Date(articles[i].created_at).getTime();
+                  const next = new Date(articles[i+1].created_at).getTime();
+                  expect(current).toBeGreaterThanOrEqual(next)
+                }
+              });
+            });
+            test("200:")
           })
