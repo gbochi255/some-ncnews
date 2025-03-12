@@ -1,8 +1,17 @@
 const articles = require("../db/data/test-data/articles");
 const topics = require("../db/data/test-data/topics")
-const { fetchAllArticles, fetchArticleById, patchArticleVotes } = require("../models/articles.model")
+const { fetchAllArticles, fetchArticleById, patchArticleVotes, fetchArticlesSort } = require("../models/articles.model")
 
 
+
+exports.getArticlesSort = (req, res, next) => {
+    const { sort_by, order } = req.query;
+    fetchArticlesSort({ sort_by, order })
+    .then((articles) => {
+        res.status(200).json({ articles });
+    })
+    .catch(next);
+}
 
 exports.getArticles = (req, res, next) => {
     fetchAllArticles()
