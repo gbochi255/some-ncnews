@@ -6,7 +6,7 @@ exports.checkTopicExists = (topic) => {
     .query("SELECT * FROM topics WHERE slug = $1;", [topic])
     .then(({ rows }) => {
         if(rows.length === 0 || !topics.topic ) {
-            return Promise.reject({ status: 404, msg: "Topi not found"});
+            return Promise.reject({ status: 404, msg: "Topic not found"});
         }
         return;
     });

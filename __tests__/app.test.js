@@ -86,7 +86,7 @@ describe("GET /api/articles/:article_id", () => {
       .get("/api/articles/NaN")
       .expect(400)
       .then((response) => {
-        expect(response.body.error).toEqual({ msg: "Invalid article_id" });
+        expect(response.body.error).toEqual({ msg: "Invalid sort_by column" });
       });
   });
 })
