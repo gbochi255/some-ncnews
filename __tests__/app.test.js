@@ -30,7 +30,7 @@ describe("GET /api", () => {
     .expect(200)
     .then((response) => {
       expect(response.body.endpoints).toBeDefined();
-      //console.log("<<<<EndPoints", response.body.endpoints);
+      
       expect(response.body.endpoints["GET /api/topics"]).toBeDefined();
     })
   })
@@ -67,7 +67,7 @@ describe("GET /api/articles/:article_id", () => {
       .expect(200)
       .then((response) => {
         const article = response.body.article;
-        //console.log("<<<<Articles schema", response.body.article)
+        
         expect(article).toBeDefined();
         
           expect(article).toHaveProperty('author', expect.any(String));
@@ -228,7 +228,7 @@ describe("POST /api/articles/:article_id/comments", () => {
               });
             });
           });
-          describe.only("GET /api/users", () => {
+          describe("GET /api/users", () => {
             test("200: responds with an array of user object with required properties", () => {
               return request(app)
               .get("/api/users")
@@ -244,21 +244,104 @@ describe("POST /api/articles/:article_id/comments", () => {
               });
             });
           });
-          describe("GET /api/articles (sorting queries", () => {
+          describe("GET /api/articles(sorting queries)", () => {
             test("200: returns sorting by created_at in descending order as default", () => {
               return request(app)
               .get("/api/articles")
               .expect(200)
-              .then((response) => {
-                const articles = response.body.articles;
-                expect(Array.isArray(articles)).toBe(true);
-                //check that each article's created_at is >= the next article'sn created_at
-                for (let i=0; i<articles.length -1; i++){
-                  const current = new Date(articles[i].created_at).getTime();
-                  const next = new Date(articles[i+1].created_at).getTime();
-                  expect(current).toBeGreaterThanOrEqual(next)
-                }
+              .then(({ body }) => { 
+                const articles = body.articles
+                expect(Array.isArray(articles)).toBe(true)
+              expect(body.articles).toBeSortedBy("created_at", { descending: true });
+              
               });
             });
-            test("200:")
-          })
+            test.skip("200: should sort articles by title in descending order when sort_by=title", () => {
+              return request(app)
+              .get("/api/articles?sort_by=title&order=asc")
+              .expect(200)
+              .then(({ body }) => {
+              const articles = body.articles;
+              
+                expect(body.articles).toBeSortedBy("title", { descending: true });
+                });
+            });
+         
+            test("200: should sort articles by votes in ascending order when sort_by=votes", () => {
+              return request(app)
+              .get("/api/articles?sort_by=votes&order=desc")
+              .expect(200)
+              .then(({ body }) => {
+                const articles = body.articles;
+                expect(Array.isArray(articles)).toBe(true)
+                expect(body.articles).toBeSortedBy("votes", { descending: true, coerce: true });
+              });
+            });
+            test("400: should return 400 for invalid query", () => {
+              return request(app)
+              .get("/api/articles?sort_by=title&order=banana")
+              .expect(400)
+              .then(({ body }) => {
+                expect(body.error).toEqual({ msg: "Invalid order query. Use 'asc' or 'desc'. " });
+              });
+            });
+            test("returns 400 for invalid sort_by column", () => {
+              return request(app)
+              .get("/api/articles/sort_by=invalid-column")
+              .expect(400)
+              .then(({ body }) => {
+                expect(body.error).toEqual({ msg: "Invalid sort_by column" })
+              });
+            });
+          });
+          describe("GET /api/articles (topic query)", () => {
+            test("200: filter articles by topic", () => {
+              return request(app)
+              .get("/api/articles?topic=mitch")
+              .expect(200)
+              .then(({ body }) => {
+                const articles = body.articles;
+                expect(Array.isArray(articles)).toBe(true)
+                articles.forEach(article => {
+                  expect(article.topic).toEqual("mitch");
+                });
+                
+              });
+            });
+            test("200: return all articles when no topics is provided", () => {
+              return request(app)
+              .get("/api/articles")
+              .expect(200)
+              .then(({ body })=>{
+                expect(Array.isArray(body.articles)).toBe(true)
+              });
+            });
+            test("400: return error when non existent topic is provided", ()=> {
+              return request(app)
+              .get("/api/articles?topic=non existent")
+              .expect(404)
+              .then(({ body }) => {
+                expect(body.error).toEqual({ msg: "Topic not found"});
+              });
+            });
+          });
+          describe("GET /api/articles/:article_id (comment_count)", () => {
+            test("200: responds with an article object including comment_count", () => {
+              return request(app)
+              .get("/api/articles/1")
+              .expect(200)
+              .then(({ body }) => {
+                expect(body.article).toEqual(expect.objectContaining({
+                  article_id: 1,
+                  title: expect.any(String),
+                  author: expect.any(String),
+                  topic: expect.any(String),
+                  body: expect.any(String),
+                  created_at: expect.any(String),
+                  votes: expect.any(Number),
+                  comment_count: expect.any(Number),
+                })
+              );
+              });
+            });
+          });
