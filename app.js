@@ -5,11 +5,14 @@ const path = require("path");
 
 const { getUsers } = require("./controller/users.controller");
 const { getCommentsByArticleId, postCommentByArticleId, removeCommentById } = require("./controller/comments.controller")
-const { getArticlesSort, getArticles, getArticleById, patchArticleById } = require("./controller/articles.controller");
+const { getArticles, getArticleById, patchArticleById } = require("./controller/articles.controller");
 const { getTopics } = require("./controller/topics.controller");
 const endpoints = JSON.parse(fs.readFileSync(path.join(__dirname, "endpoints.json"), "utf-8"));
 
 app.use(express.json());
+
+app.get("/api/articles", getArticles);
+
 app.get("/api", (req, res) => {
     res.status(200).json({ endpoints });
 });
@@ -22,8 +25,8 @@ app.get("/api/users", getUsers)
 app.get("/api/articles/:article_id/comments", getCommentsByArticleId);
 app.get("/api/topics", getTopics);
 
-app.get("/api/articles", getArticles);
-app.get("/api/articles", getArticlesSort);
+//app.get("/api/articles", getArticles);
+//app.get("/api/articles", getArticlesSort);
 
 app.get("/api/articles/:article_id", getArticleById);
 app.patch("/api/articles/:article_id", patchArticleById)
