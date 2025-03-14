@@ -44,6 +44,7 @@ describe("GET /api/topics", () => {
     .then((response) => {
       const topics = response.body.topics;
       expect(Array.isArray(topics)).toBe(true);
+      expect(topics.length).toBeGreaterThan(0);
     })
   })
   test("200: responds with an array of topic objects slug and description", () => {
@@ -98,7 +99,7 @@ describe("GET /api/articles", () =>{
     .then((response) => {
       const articles = response.body.articles;
       expect(Array.isArray(articles)).toBe(true)
-      
+      expect(articles.length).toBeGreaterThan(0)
       articles.forEach((article) => {
       expect(articles[0]).toHaveProperty('author');
       expect(articles[0]).toHaveProperty('title');
@@ -133,14 +134,16 @@ describe("GET /api/articles/:article_id/comments", () => {
     .then((response) => {
       const comments = response.body.comments;
       expect(Array.isArray(comments)).toBe(true)
+      if(comments.length>0){
       comments.forEach((comment) => {
-        expect(comment).toHaveProperty("comment_id");
-        expect(comment).toHaveProperty("votes");
-        expect(comment).toHaveProperty("create_at");
-        expect(comment).toHaveProperty("author");
-        expect(comment).toHaveProperty("body");
-        expect(comment).toHaveProperty("article_id");
+        expect(comment).toHaveProperty("comment_id", expect.any(Number));
+        expect(comment).toHaveProperty("votes", expect.any(Number));
+        expect(comment).toHaveProperty("created_at", expect.any(String));
+        expect(comment).toHaveProperty("author", expect.any(String));
+        expect(comment).toHaveProperty("body", expect.any(String));
+        expect(comment).toHaveProperty("article_id", expect.any(Number));
       })
+    }
     })
   })
   test("200: return empty array if article exist but has no comment", () => {
@@ -164,12 +167,12 @@ describe("POST /api/articles/:article_id/comments", () => {
     .expect(201)
     .then((response) => {
       const comment = response.body.comment;
-      expect(comment).toHaveProperty("comment_id");
+      expect(comment).toHaveProperty("comment_id", expect.any(Number));
       expect(comment.author).toBe(newComment.username);
       expect(comment.body).toBe(newComment.body);
       expect(comment.article_id).toBe(2);
-      expect(comment).toHaveProperty("votes");
-      expect(comment).toHaveProperty("created_at");
+      expect(comment).toHaveProperty("votes", expect.any(Number));
+      expect(comment).toHaveProperty("created_at", expect.any(String));
     });
   });
     test("400: return for invalid article_id", ()  => {
@@ -201,11 +204,10 @@ describe("POST /api/articles/:article_id/comments", () => {
               .patch("/api/articles/1")
               .send({ inc_votes: 1 })
               .expect(200)
+              
               .then((response) => {
-                
                 const article = response.body.article;
-                
-                expect(article).toHaveProperty("votes")
+                expect(article).toHaveProperty("votes", expect.any(Number))
               })
 
             })
@@ -236,10 +238,11 @@ describe("POST /api/articles/:article_id/comments", () => {
               .then((response) => {
                 const users = response.body.users;
                 expect(Array.isArray(users)).toBe(true)
+                expect(users.length).toBeGreaterThan(0)
                 users.forEach((user) => {
-                  expect(user).toHaveProperty("username");
-                  expect(user).toHaveProperty("name");
-                  expect(user).toHaveProperty("avatar_url");
+                  expect(user).toHaveProperty("username", expect.any(String));
+                  expect(user).toHaveProperty("name", expect.any(String));
+                  expect(user).toHaveProperty("avatar_url", expect.any(String));
                 });
               });
             });
@@ -250,20 +253,22 @@ describe("POST /api/articles/:article_id/comments", () => {
               .get("/api/articles")
               .expect(200)
               .then(({ body }) => { 
-                const articles = body.articles
-                expect(Array.isArray(articles)).toBe(true)
+                const articles = body.articles;
+                expect(Array.isArray(articles)).toBe(true);
+                expect(articles.length).toBeGreaterThan(0)
               expect(body.articles).toBeSortedBy("created_at", { descending: true });
               
               });
             });
-            test.skip("200: should sort articles by title in descending order when sort_by=title", () => {
+            test("200: should sort articles by title in descending order when sort_by=title", () => {
               return request(app)
               .get("/api/articles?sort_by=title&order=asc")
               .expect(200)
               .then(({ body }) => {
               const articles = body.articles;
-              
-                expect(body.articles).toBeSortedBy("title", { descending: true });
+              expect(Array.isArray(articles)).toBe(true);
+              expect(articles.length).toBeGreaterThan(0)
+                expect(articles).toBeSortedBy("title", { descending: true, coerce: true });
                 });
             });
          
@@ -274,7 +279,8 @@ describe("POST /api/articles/:article_id/comments", () => {
               .then(({ body }) => {
                 const articles = body.articles;
                 expect(Array.isArray(articles)).toBe(true)
-                expect(body.articles).toBeSortedBy("votes", { descending: true, coerce: true });
+                expect(articles.length).toBeGreaterThan(0)
+                expect(articles).toBeSortedBy("votes", { descending: true, coerce: true });
               });
             });
             test("400: should return 400 for invalid query", () => {
@@ -302,10 +308,11 @@ describe("POST /api/articles/:article_id/comments", () => {
               .then(({ body }) => {
                 const articles = body.articles;
                 expect(Array.isArray(articles)).toBe(true)
+                if(articles.length > 0){
                 articles.forEach(article => {
                   expect(article.topic).toEqual("mitch");
                 });
-                
+              }
               });
             });
             test("200: return all articles when no topics is provided", () => {
@@ -313,7 +320,9 @@ describe("POST /api/articles/:article_id/comments", () => {
               .get("/api/articles")
               .expect(200)
               .then(({ body })=>{
-                expect(Array.isArray(body.articles)).toBe(true)
+                const articles = body.articles
+                expect(Array.isArray(articles)).toBe(true)
+                expect(articles.length).toBeGreaterThan(0)
               });
             });
             test("400: return error when non existent topic is provided", ()=> {
