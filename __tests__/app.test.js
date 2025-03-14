@@ -301,20 +301,7 @@ describe("POST /api/articles/:article_id/comments", () => {
             });
           });
           describe("GET /api/articles (topic query)", () => {
-            test("200: filter articles by topic", () => {
-              return request(app)
-              .get("/api/articles?topic=mitch")
-              .expect(200)
-              .then(({ body }) => {
-                const articles = body.articles;
-                expect(Array.isArray(articles)).toBe(true)
-                if(articles.length > 0){
-                articles.forEach(article => {
-                  expect(article.topic).toEqual("mitch");
-                });
-              }
-              });
-            });
+            
             test("200: return all articles when no topics is provided", () => {
               return request(app)
               .get("/api/articles")

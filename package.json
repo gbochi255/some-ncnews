@@ -10,6 +10,7 @@
     "prepare": "husky install",
     "start": "node listen.js",
     "test-seed": "jest seed.test.js",
+    "seed": "node ./db/seeds/run-seed.js",
     "seed-prod": "NODE_ENV=production npm run seed"
   },
   "repository": {
@@ -31,6 +32,7 @@
     "supertest": "^7.0.0"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "pg": "^8.13.3",

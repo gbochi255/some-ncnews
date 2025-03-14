@@ -30,14 +30,15 @@ exports.fetchAllArticles = ({ sort_by = "created_at", order = "desc", topic } = 
           FROM articles 
           LEFT JOIN comments ON articles.article_id = comments.article_id `;
           const binders = [];
+          
           if(topic) { 
-            
             queryStr += ` WHERE articles.topic = $1 `;
             binders.push(topic);
-        }
-          queryStr += ` 
+          }
+            queryStr += ` 
           GROUP BY articles.article_id 
-          ORDER BY ${sort_by} ${orderLower.toUpperCase()}; `;
+          ORDER BY ${sort_by} ${orderLower.toUpperCase()}; 
+          `;
           return db
           .query(queryStr, binders)
           .then(({ rows }) => rows)
