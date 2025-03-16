@@ -341,3 +341,66 @@ describe("POST /api/articles/:article_id/comments", () => {
               });
             });
           });
+          describe("GET /api/users/:username", () => {
+            test("200: returns a user object with username, avatar_url, and name", () => {
+              return request(app)
+              .get("/api/users/icellusedkars")
+              .expect(200)
+              .then(({ body })=> {
+                expect(body.user).toEqual(
+                  expect.objectContaining({
+                    username: expect.any(String),
+                    avatar_url: expect.any(String),
+                    name: expect.any(String)
+
+                  })
+                );
+              });
+            });
+            test("404: returns error message when user not found", () => {
+              return request(app)
+              .get("/api/users/nonexistentuser")
+              .expect(404)
+              .then(({ body }) => {
+                expect(body).toEqual({ msg: "User not found" });
+              });
+            });
+          });
+          describe.only("PATCH /api/comments/:comment_id", () => {
+            test("200: update the comment's votes and return the updated comment", () => {
+              const newVotes = { inc_votes: 1 };
+              return request(app)
+              .patch("/api/comments/1")
+              .send(newVotes)
+              .expect(200)
+              .then(({ body }) =>  {
+                expect(body.comment).toEqual(
+                  expect.objectContaining({ 
+                    comment_id: 1,
+                    votes: expect.any(Number)
+                  })
+                );
+
+              });
+                
+            });
+            test("400: return 400 if inc_votes is missing", () => {
+              return request(app)
+              .patch("/api/comments/1")
+              .send({})
+              .expect(400)
+              .then(({ body }) => {
+                expect(body).toEqual({ msg: "Bad request: inc_votes is required" });
+              })
+            })
+          test("400: return 404 if comment_id does not exist", () => {
+            return request(app)
+            .patch("/api/comments/8999")
+            .send({ inc_votes: 1 })
+            .expect(404)
+            .then(({ body }) => {
+              expect(body).toEqual({ msg: "Comment not found" });
+            });
+          });
+          });
+        

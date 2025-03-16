@@ -1,15 +1,35 @@
 const { fetchCommentsByArticleId } = require("../models/comments.model")
 const { insertCommentByArticleId } = require("../models/comments.model")
 const { deleteCommentById } = require("../models/comments.model")
+const { updateCommentVotes } = require("../models/comments.model");
+
+
+
 exports.getCommentsByArticleId = (req, res, next) => {
     const { article_id } = req.params;
-
-fetchCommentsByArticleId(article_id)
+    
+    fetchCommentsByArticleId(article_id)
     .then((comments) => {
         res.status(200).json({ comments })
     })
     .catch(next);
 }
+
+exports.patchCommentVotes = (req, res, next) => {
+    const { comment_id } = req.params;
+    const { inc_votes } = req.body;
+    if(inc_votes === undefined){
+        return res.status(400).json({ msg: "Bad request: inc_votes is required" });
+    }
+    if(isNaN(Number(comment_id))){
+        return res.status(400).json({ msg: "Bad request: comment_id must be a number" });
+    }
+    updateCommentVotes(comment_id, inc_votes)
+    .then((updatedComment) => {
+        res.status(200).json({ comment: updatedComment });
+    })
+    .catch(next)
+};
 
 exports.postCommentByArticleId = (req, res, next) => {
     const { article_id } = req.params

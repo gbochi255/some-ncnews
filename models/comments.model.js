@@ -1,6 +1,25 @@
 const db = require("../db/connection");
 const format = require("pg-format");
 
+
+exports.updateCommentVotes = (comment_id, inc_votes) => {
+    if (typeof inc_votes !== "number"){
+        return Promise.reject({ status: 400, msg: "Bad request: inc_votes must be a number" });
+    }
+    const queryStr  = ` 
+    UPDATE comments 
+    SET votes = votes + $1 
+    WHERE comment_id = $2 
+    RETURNING *; `;
+    return db.query(queryStr, [inc_votes, comment_id])
+    .then(({ rows }) =>{
+        if (rows.length === 0){
+            return Promise.reject({ status: 404, msg: "Comment not found" });
+        }
+        return rows[0];
+    });
+};
+
 exports.fetchCommentsByArticleId = (article_id) => {
     const queryStr = `SELECT comment_id, votes, created_at, author, body, article_id 
     FROM comments 
