@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const fs = require("fs");
 const path = require("path");
+const cors = require("cors")
 //const apiRouter = require("./db/router/api-router");
 
 const { getUsers } = require("./controller/users.controller");
@@ -13,7 +14,7 @@ const endpoints = JSON.parse(fs.readFileSync(path.join(__dirname, "endpoints.jso
 const  apiRouter  = require("./db/router/api-router")
 
 app.use(express.json());
-
+app.use(cors());
 app.use("/api", apiRouter)
 
 app.get("/api/articles", getArticles);
